@@ -12,7 +12,7 @@ async function startServer() {
 
   // API routes
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", app: "Snaplet" });
+    res.json({ status: "ok", app: "Snaplit" });
   });
 
   // Example API route for inviting or other server-side logic

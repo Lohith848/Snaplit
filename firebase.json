@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "snaplit",
+        "supportEmail": "support@undefined.firebaseapp.com"
+      }
+    }
+  }
+}

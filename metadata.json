@@ -1,6 +1,6 @@
 {
-  "name": "Snaplet",
-  "description": "A real-time photo sharing app where photos appear instantly on friends' home screen widgets.",
+  "name": "Snaplit",
+  "description": "A real-time photo sharing app called Snaplit where photos appear instantly on friends' home screen widgets.",
   "requestFramePermissions": [
     "camera"
   ],

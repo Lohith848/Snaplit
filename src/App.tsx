@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera, History, Users, Settings, Plus, X, Smartphone } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
-import { signInWithPopup, signInWithRedirect, getRedirectResult, googleProvider, auth } from './lib/firebase';
+import { signInWithPopup, googleProvider, auth } from './lib/firebase';
 import { createUserProfile, checkUsernameUnique } from './services/userService';
 import CameraView from './components/CameraView';
 import HistoryView from './components/HistoryView';
@@ -22,51 +22,14 @@ export default function App() {
   const [username, setUsername] = useState('');
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameError, setUsernameError] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [loginLoading, setLoginLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
-      setLoginError('');
-      setLoginLoading(true);
-      console.log('Attempting Google sign-in with popup...');
       await signInWithPopup(auth, googleProvider);
-      console.log('Sign-in successful');
-    } catch (error: any) {
-      console.error('Popup sign-in failed:', error.code, error.message);
-      if (error.code === 'auth/popup-closed-by-user') {
-        setLoginError('Login cancelled. Please try again.');
-      } else if (error.code === 'auth/popup-blocked') {
-        console.log('Popup blocked, falling back to redirect...');
-        try {
-          await signInWithRedirect(auth, googleProvider);
-        } catch (redirectError: any) {
-          console.error('Redirect sign-in failed:', redirectError);
-          setLoginError('Login failed. Please allow popups or try a different browser.');
-        }
-      } else if (error.code === 'auth/unauthorized-domain') {
-        setLoginError('Domain not authorized. Add localhost to Firebase authorized domains.');
-      } else {
-        setLoginError(`Login failed: ${error.message}`);
-      }
-    } finally {
-      setLoginLoading(false);
+    } catch (error) {
+      console.error('Login failed', error);
     }
   };
-
-  // Handle redirect result on page load
-  React.useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          console.log('Redirect sign-in successful');
-        }
-      })
-      .catch((error) => {
-        console.error('Redirect result error:', error);
-        setLoginError('Login failed. Please try again.');
-      });
-  }, []);
 
   const handleOnboarding = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,25 +81,17 @@ export default function App() {
         >
           <Camera size={48} className="text-black" strokeWidth={2.5} />
         </motion.div>
-        <h1 className="text-4xl font-display font-bold mb-4 tracking-tight">Snaplet</h1>
+        <h1 className="text-4xl font-display font-bold mb-4 tracking-tight">Snaplit</h1>
         <p className="text-gray-400 text-center mb-12 max-w-xs">
           Live photos from your best friends, right on your Home Screen.
         </p>
         <button 
           onClick={handleLogin}
-          disabled={loginLoading}
-          className="w-full max-w-sm bg-white text-black font-semibold py-4 rounded-2xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full max-w-sm bg-white text-black font-semibold py-4 rounded-2xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-3"
         >
-          {loginLoading ? (
-            <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <>
-              <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
-              Continue with Google
-            </>
-          )}
+          <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
+          Continue with Google
         </button>
-        {loginError && <p className="text-red-500 text-sm mt-4">{loginError}</p>}
       </div>
     );
   }
@@ -145,7 +100,7 @@ export default function App() {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-black text-white p-6">
         <h2 className="text-3xl font-display font-bold mb-2">Pick a username</h2>
-        <p className="text-gray-400 mb-8 text-center">This is how your friends will find you on Snaplet.</p>
+        <p className="text-gray-400 mb-8 text-center">This is how your friends will find you on Snaplit.</p>
         <form onSubmit={handleOnboarding} className="w-full max-w-sm space-y-4">
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">@</span>
@@ -193,7 +148,7 @@ export default function App() {
             </button>
             
             <div className="flex flex-col items-center">
-              <span className="text-yellow-500 font-display font-bold text-xl">Snaplet</span>
+              <span className="text-yellow-500 font-display font-bold text-xl">Snaplit</span>
             </div>
 
             <button 

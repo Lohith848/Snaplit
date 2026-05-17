@@ -9,6 +9,8 @@
         "displayName": { "type": "string" },
         "photoURL": { "type": "string" },
         "username": { "type": "string" },
+        "hasSyncedContacts": { "type": "boolean" },
+        "hasSetupWidget": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
@@ -30,7 +32,7 @@
     },
     "Photo": {
       "title": "Photo",
-      "description": "A photo shared in the locket",
+      "description": "A photo shared with friends",
       "type": "object",
       "properties": {
         "id": { "type": "string" },

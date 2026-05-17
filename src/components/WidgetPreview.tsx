@@ -29,7 +29,7 @@ export default function WidgetPreview({ photo, currentUserId }: Props) {
       <img 
         src={photo.imageUrl} 
         className="w-full h-full object-cover" 
-        alt="Snaplet" 
+        alt="Snaplit" 
       />
       
       {/* Sender Info Overlay */}

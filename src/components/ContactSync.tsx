@@ -16,12 +16,12 @@ export default function ContactSync({ onComplete }: { onComplete: () => void }) 
   const inviteLink = `https://snaplet.app/join/${auth.currentUser?.uid}`;
 
   const shareViaSms = () => {
-    const text = encodeURIComponent(`Add me on Snaplet! I want to see your live photos on my home screen: ${inviteLink}`);
+    const text = encodeURIComponent(`Add me on Snaplit! I want to see your live photos on my home screen: ${inviteLink}`);
     window.open(`sms:?&body=${text}`, '_blank');
   };
 
   const shareViaWhatsapp = () => {
-    const text = encodeURIComponent(`Add me on Snaplet! I want to see your live photos on my home screen: ${inviteLink}`);
+    const text = encodeURIComponent(`Add me on Snaplit! I want to see your live photos on my home screen: ${inviteLink}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
@@ -29,8 +29,8 @@ export default function ContactSync({ onComplete }: { onComplete: () => void }) 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Snaplet Invite',
-          text: 'Add me on Snaplet! I want to see your live photos on my home screen.',
+          title: 'Snaplit Invite',
+          text: 'Add me on Snaplit! I want to see your live photos on my home screen.',
           url: inviteLink,
         });
       } catch (err) {

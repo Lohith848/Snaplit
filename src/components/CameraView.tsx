@@ -205,7 +205,7 @@ export default function CameraView({ profile, takePhotoTrigger = 0 }: Props) {
                  </div>
                  <h3 className="text-xl font-display font-bold mb-2">Sync with Widget?</h3>
                  <p className="text-gray-300 text-sm mb-8">
-                   Allow Snaplet to update your friends' home screen widgets with this photo.
+                   Allow Snaplit to update your friends' home screen widgets with this photo.
                  </p>
                  <div className="w-full flex flex-col gap-3">
                    <button 

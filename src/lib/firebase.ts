@@ -1,28 +1,33 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const firebaseConfigFromEnv = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID as string,
 };
 
-const isConfigured = firebaseConfigFromEnv.apiKey && firebaseConfigFromEnv.projectId;
+// Check if all crucial environment variables are present and not just empty strings
+const isConfigured = 
+  firebaseConfigFromEnv.apiKey && 
+  firebaseConfigFromEnv.apiKey.length > 5 &&
+  firebaseConfigFromEnv.projectId;
+
 const finalConfig = isConfigured ? firebaseConfigFromEnv : firebaseConfig;
 const databaseId = import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || (firebaseConfig as any).firestoreDatabaseId;
+
+if (!finalConfig.apiKey) {
+  console.error("Firebase API Key is missing! Check .env.local or firebase-applet-config.json");
+}
 
 const app = initializeApp(finalConfig);
 export const db = getFirestore(app, databaseId);
 export const auth = getAuth(app);
-
-// Set auth persistence to LOCAL so user stays signed in after browser refresh
-setPersistence(auth, browserLocalPersistence).catch(console.error);
-
 export const googleProvider = new GoogleAuthProvider();
 
 // Connection testing
@@ -39,4 +44,4 @@ async function testConnection() {
 
 testConnection();
 
-export { signInWithPopup, signOut, signInWithRedirect, getRedirectResult };
+export { signInWithPopup, signOut };

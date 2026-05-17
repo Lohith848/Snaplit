@@ -13,8 +13,8 @@ export default function WidgetSetup({ onClose }: Props) {
   const steps = platform === 'ios' ? [
     { text: "Tap the 'Share' icon in Safari", icon: <Smartphone size={16} /> },
     { text: "Scroll down and tap 'Add to Home Screen'", icon: <Plus size={16} /> },
-    { text: "Open the Snaplet app from your home screen", icon: <Check size={16} /> },
-    { text: "Long-press your home screen and add the Snaplet widget", icon: <Info size={16} /> }
+    { text: "Open the Snaplit app from your home screen", icon: <Check size={16} /> },
+    { text: "Long-press your home screen and add the Snaplit widget", icon: <Info size={16} /> }
   ] : [
     { text: "Tap the three dots in Chrome", icon: <Smartphone size={16} /> },
     { text: "Tap 'Install App' or 'Add to Home Screen'", icon: <Smartphone size={16} /> },
@@ -88,7 +88,7 @@ export default function WidgetSetup({ onClose }: Props) {
           <div className="mt-12 bg-yellow-500/10 border border-yellow-500/20 p-6 rounded-3xl text-center">
             <p className="text-yellow-500 text-sm font-medium mb-2">Pro Tip</p>
             <p className="text-zinc-400 text-sm italic">
-              "Snaplet works best when added as a PWA first!"
+              "Snaplit works best when added as a PWA first!"
             </p>
           </div>
 
