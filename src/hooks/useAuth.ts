@@ -30,6 +30,7 @@ export function useAuth() {
 
           if (sessionError) {
             console.error('Session error:', sessionError);
+            setLoading(false);
             return;
           }
 
@@ -40,19 +41,24 @@ export function useAuth() {
               email: session.user.email,
               user_metadata: session.user.user_metadata,
             });
+            // Keep loading=true while profile loads
             loadProfile(session.user.id);
+          } else {
+            // No session found, loading complete
+            setLoading(false);
           }
         }).catch((err) => {
           console.error('getSession failed:', err);
+          setLoading(false);
         });
       } catch (err) {
         console.error('Auth initialization error:', err);
+        setLoading(false);
       }
     };
 
-    // Start init but don't block - immediately show login
+    // Start init
     initAuth();
-    setLoading(false);
 
     // Listen for auth changes - this is the real source of truth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -66,10 +72,13 @@ export function useAuth() {
           email: session.user.email,
           user_metadata: session.user.user_metadata,
         });
+        // Keep loading true while profile loads
+        setLoading(true);
         await loadProfile(session.user.id);
       } else {
         setUser(null);
         setProfile(null);
+        setLoading(false);
       }
     });
 
@@ -93,6 +102,11 @@ export function useAuth() {
     } catch (error) {
       console.error('Failed to load profile:', error);
       setProfile(null);
+    } finally {
+      // Mark loading complete after profile check
+      if (isMounted) {
+        setLoading(false);
+      }
     }
   };
 

@@ -73,13 +73,16 @@ export default function App() {
     } catch (error: any) {
       console.error('Onboarding error:', error);
       
-      // Check if it's an RLS error
       let message = error?.message || 'Failed to create profile';
       
-      if (message.includes('row-level security') || message.includes('RLS')) {
-        message = 'Database permission error. Please contact support or refresh and try again.';
-      } else if (message.includes('duplicate') || message.includes('unique')) {
-        message = 'Username already taken. Try another one.';
+      // Check error type
+      if (error?.status === 409 || message.includes('duplicate') || message.includes('unique') || message.includes('constraint')) {
+        message = 'This account already has a profile. Please logout and login again.';
+        console.log('409 Conflict - User already has profile');
+      } else if (message.includes('row-level security') || message.includes('RLS')) {
+        message = 'Database permission error. Make sure RLS policies are configured.';
+      } else if (message.includes('timeout')) {
+        message = 'Request timeout. Please try again.';
       }
       
       setUsernameError(message);

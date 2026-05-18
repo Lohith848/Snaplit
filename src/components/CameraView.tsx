@@ -57,23 +57,20 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        console.log('Media stream set, waiting for metadata');
         
-        // Add error handler for video element
-        videoRef.current.onerror = () => {
-          console.error('Video element error');
-          setCameraError('Video playback error. Please refresh and try again.');
+        const metadataTimeout = setTimeout(() => {
+          console.log('Metadata timeout - assuming video ready');
           setCameraLoading(false);
-        };
+        }, 4000);
         
         videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded, starting playback');
-          videoRef.current?.play().catch((err) => {
-            console.error('Play error:', err);
-            setCameraError('Could not start video. Please check camera permissions.');
-          });
+          clearTimeout(metadataTimeout);
+          console.log('Video metadata loaded, camera ready');
           setCameraLoading(false);
         };
       } else {
+        console.error('Video ref not available');
         setCameraLoading(false);
       }
     } catch (err: any) {
