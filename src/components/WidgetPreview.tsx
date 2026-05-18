@@ -37,7 +37,7 @@ export default function WidgetPreview({ photo, currentUserId }: Props) {
          <img src={photo.senderPhoto} className="w-6 h-6 rounded-full border border-white/20" alt={photo.senderName} />
          <div className="flex flex-col">
            <span className="text-[10px] font-bold leading-none">{photo.senderId === currentUserId ? 'You' : photo.senderName}</span>
-           <span className="text-[8px] opacity-70 leading-none">{formatDate(photo.createdAt?.toDate() || new Date())}</span>
+           <span className="text-[8px] opacity-70 leading-none">{formatDate(typeof photo.createdAt === 'string' ? new Date(photo.createdAt) : photo.createdAt || new Date())}</span>
          </div>
       </div>
 

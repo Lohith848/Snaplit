@@ -59,7 +59,7 @@ export default function HistoryView({ profile }: Props) {
             </div>
             <div className="px-2">
               <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                {formatDate(photo.createdAt?.toDate() || new Date())}
+                {formatDate(typeof photo.createdAt === 'string' ? new Date(photo.createdAt) : photo.createdAt || new Date())}
               </p>
             </div>
           </motion.div>
