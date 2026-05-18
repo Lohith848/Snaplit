@@ -20,7 +20,7 @@ export default function ContactSync({ onComplete }: { onComplete: () => void }) 
     });
   }, []);
 
-  const inviteLink = userId ? `https://snaplit.app/join/${userId}` : 'https://snaplit.app';
+  const inviteLink = userId ? `https://snaplit-live.vercel.app/join/${userId}` : 'https://snaplit-live.vercel.app';
 
   const shareViaSms = () => {
     const text = encodeURIComponent(`Add me on Snaplit! I want to see your live photos on my home screen: ${inviteLink}`);
