@@ -17,7 +17,17 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
       throw error;
     }
 
-    return data as UserProfile;
+    // Map database columns to TypeScript interface (snake_case to camelCase)
+    return {
+      uid: data.id,
+      username: data.username,
+      displayName: data.display_name,
+      photoURL: data.photo_url,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+      hasSyncedContacts: data.has_synced_contacts,
+      hasSetupWidget: data.has_setup_widget,
+    };
   } catch (error) {
     console.error('Error fetching user profile:', error);
     return null;

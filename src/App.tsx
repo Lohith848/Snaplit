@@ -73,8 +73,19 @@ export default function App() {
 
   const handleContactSyncComplete = async () => {
     if (!profile) return;
-    await updateProfile(profile.uid, { hasSyncedContacts: true });
-    setProfile({ ...profile, hasSyncedContacts: true });
+    try {
+      // Update local state first for immediate UI feedback
+      const updatedProfile = { ...profile, hasSyncedContacts: true };
+      setProfile(updatedProfile);
+      
+      // Then update database
+      await updateProfile(profile.uid, { hasSyncedContacts: true });
+      console.log('Contact sync complete');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      // Even if database update fails, keep the local state updated
+      // so user can proceed
+    }
   };
 
   if (loading) {
