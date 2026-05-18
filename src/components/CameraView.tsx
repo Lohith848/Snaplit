@@ -25,7 +25,10 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
   const [cameraLoading, setCameraLoading] = useState(true);
 
   useEffect(() => {
-    startCamera();
+    // Wait a tick to ensure video element is mounted
+    const timer = setTimeout(() => {
+      startCamera();
+    }, 100);
     
     // Subscribe to feed
     const unsubscribe = subscribeToFeed(profile.uid, [], (photos) => {
@@ -33,6 +36,7 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
     });
 
     return () => {
+      clearTimeout(timer);
       stopCamera();
       unsubscribe();
     };
@@ -46,6 +50,14 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
 
   const startCamera = async () => {
     try {
+      // Check if video element exists before proceeding
+      if (!videoRef.current) {
+        console.error('Video element not available, retrying...');
+        // Retry after a moment
+        setTimeout(startCamera, 500);
+        return;
+      }
+
       setCameraLoading(true);
       setCameraError(null);
       
@@ -58,10 +70,11 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
       console.log('Camera stream obtained:', mediaStream.getTracks().length, 'tracks');
       setStream(mediaStream);
       
+      // Double check video ref still exists after async operation
       if (!videoRef.current) {
-        console.error('Video ref not available');
+        console.error('Video ref lost after getUserMedia');
         setCameraLoading(false);
-        setCameraError('Video element not initialized');
+        setCameraError('Video element initialization failed');
         return;
       }
       
@@ -76,7 +89,7 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
           console.log('Video has dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
           clearInterval(checkVideoReady);
           setCameraLoading(false);
-        } else if (readyAttempts > 20) {
+        } else if (readyAttempts > 30) {
           console.warn('Video ready check timeout after', readyAttempts * 200, 'ms');
           clearInterval(checkVideoReady);
           setCameraLoading(false);
