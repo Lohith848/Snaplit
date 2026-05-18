@@ -16,7 +16,7 @@ export interface AuthUser {
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -24,45 +24,37 @@ export function useAuth() {
 
     const initAuth = async () => {
       try {
-        console.log('Checking current session...');
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // Start non-blocking session check in background
+        supabase.auth.getSession().then(({ data: { session }, error: sessionError }) => {
+          if (!isMounted) return;
 
-        if (!isMounted) return;
+          if (sessionError) {
+            console.error('Session error:', sessionError);
+            return;
+          }
 
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          setUser(null);
-          setProfile(null);
-          setLoading(false);
-          return;
-        }
-
-        if (session?.user) {
-          console.log('Session found, loading profile for user:', session.user.id);
-          setUser({
-            id: session.user.id,
-            email: session.user.email,
-            user_metadata: session.user.user_metadata,
-          });
-          await loadProfile(session.user.id);
-        } else {
-          console.log('No session found');
-          setUser(null);
-          setProfile(null);
-          setLoading(false);
-        }
+          if (session?.user) {
+            console.log('Session found for user:', session.user.id);
+            setUser({
+              id: session.user.id,
+              email: session.user.email,
+              user_metadata: session.user.user_metadata,
+            });
+            loadProfile(session.user.id);
+          }
+        }).catch((err) => {
+          console.error('getSession failed:', err);
+        });
       } catch (err) {
         console.error('Auth initialization error:', err);
-        if (isMounted) {
-          // Even on error, stop loading - don't block the UI
-          setLoading(false);
-        }
       }
     };
 
+    // Start init but don't block - immediately show login
     initAuth();
+    setLoading(false);
 
-    // Listen for auth changes
+    // Listen for auth changes - this is the real source of truth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
 
@@ -79,8 +71,6 @@ export function useAuth() {
         setUser(null);
         setProfile(null);
       }
-      setLoading(false);
-      setError(null);
     });
 
     return () => {
@@ -103,9 +93,6 @@ export function useAuth() {
     } catch (error) {
       console.error('Failed to load profile:', error);
       setProfile(null);
-      // Don't set error here - profile might not exist yet (new user in onboarding)
-    } finally {
-      setLoading(false);
     }
   };
 
