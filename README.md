@@ -1,22 +1,22 @@
 <div align="center">
 
-# Snaplet
+# Snaplit
 
 **Live photos from your best friends, right on your Home Screen.**
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://snaplet-sage.vercel.app)
-[![Built with Firebase](https://img.shields.io/badge/Built%20with-Firebase-FFCA28?style=for-the-badge&logo=firebase)](https://firebase.google.com)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://snaplit-sage.vercel.app)
+[![Built with Supabase](https://img.shields.io/badge/Built%20with-Supabase-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://react.dev)
 
 </div>
 
 ## Features
 
-- **Google Sign-In** - Secure authentication with Firebase Auth
+- **Email OTP & Google Sign-In** - Secure authentication via Supabase Auth
 - **Friend System** - Add friends and share live photos
 - **Camera Integration** - Capture and share moments instantly
 - **Home Screen Widget** - Display friend photos on your home screen
-- **Real-time Updates** - Powered by Firestore for instant sync
+- **Real-time Updates** - Powered by Supabase for instant sync
 - **Beautiful UI** - Smooth animations with Motion, styled with Tailwind CSS
 
 ## Tech Stack
@@ -25,7 +25,7 @@
 - **Styling:** Tailwind CSS v4
 - **Animations:** Motion (Framer Motion)
 - **Icons:** Lucide React
-- **Backend:** Firebase Auth, Firestore
+- **Backend:** Supabase (PostgreSQL, Auth, Realtime)
 - **Deployment:** Vercel
 
 ## Getting Started
@@ -34,6 +34,7 @@
 
 - Node.js 18+
 - npm or yarn
+- Supabase account (https://supabase.com)
 
 ### Installation
 
@@ -48,15 +49,10 @@
    npm install
    ```
 
-3. Create a `.env.local` file with your Firebase configuration:
+3. Create a `.env.local` file with your Supabase configuration:
    ```env
-   VITE_FIREBASE_API_KEY=your_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   VITE_FIREBASE_PROJECT_ID=your_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   VITE_FIREBASE_APP_ID=your_app_id
-   VITE_FIREBASE_FIRESTORE_DATABASE_ID=your_database_id
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your_anon_key
    ```
 
 4. Run the development server:
@@ -66,16 +62,75 @@
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Firebase Setup
+## Supabase Setup
 
-1. Create a project at [Firebase Console](https://console.firebase.google.com)
-2. Enable **Google Sign-In** in Authentication → Sign-in method
-3. Add your domains to **Authorized domains** (localhost, your Vercel URL)
-4. Create a Firestore database
-5. Deploy the security rules:
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
+### 1. Create Supabase Project
+1. Go to [Supabase Console](https://supabase.com/dashboard)
+2. Create a new project
+
+### 2. Create Database Tables
+Run these SQL queries in your Supabase SQL Editor:
+
+```sql
+-- Users table
+CREATE TABLE users (
+  id UUID PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  photo_url TEXT,
+  has_synced_contacts BOOLEAN DEFAULT false,
+  has_setup_widget BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Friendships table
+CREATE TABLE friendships (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  friend_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, friend_id)
+);
+
+-- Photos table
+CREATE TABLE photos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  sender_name TEXT NOT NULL,
+  sender_photo TEXT,
+  image_url TEXT NOT NULL,
+  caption TEXT,
+  recipient_ids UUID[] DEFAULT '{}',
+  reactions JSONB DEFAULT '{}',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create indexes
+CREATE INDEX idx_photos_sender_id ON photos(sender_id);
+CREATE INDEX idx_photos_created_at ON photos(created_at DESC);
+CREATE INDEX idx_friendships_user_id ON friendships(user_id);
+```
+
+### 3. Enable Authentication
+1. Go to **Authentication** → **Providers**
+2. Enable **Email** provider with OTP option
+3. Enable **Google** provider and add OAuth credentials:
+   - Get credentials from [Google Cloud Console](https://console.cloud.google.com)
+   - Add Client ID and Client Secret to Supabase
+
+### 4. Enable Realtime
+1. Go to **Realtime** → **Replication**
+2. Enable replication for:
+   - `photos` table
+   - `friendships` table
+
+### 5. Set Up Storage (Optional)
+1. Go to **Storage**
+2. Create a bucket named `photos`
+3. Configure access rules as needed
 
 ## Available Scripts
 
@@ -91,25 +146,26 @@
 
 ```
 src/
-├── components/     # React components
+├── components/         # React components
 │   ├── CameraView.tsx
 │   ├── ContactSync.tsx
 │   ├── FriendsView.tsx
 │   ├── HistoryView.tsx
+│   ├── LoginView.tsx
 │   ├── WidgetPreview.tsx
 │   └── WidgetSetup.tsx
-├── hooks/          # Custom React hooks
+├── hooks/              # Custom React hooks
 │   └── useAuth.ts
-├── lib/            # Utilities and configurations
-│   ├── firebase.ts
+├── lib/                # Utilities and configurations
+│   ├── supabase.ts
 │   ├── firestore-errors.ts
 │   └── utils.ts
-├── services/       # API and Firestore services
+├── services/           # API and database services
 │   ├── photoService.ts
 │   └── userService.ts
-├── App.tsx         # Main application component
-├── index.css       # Global styles
-└── types.ts        # TypeScript interfaces
+├── App.tsx             # Main application component
+├── index.css           # Global styles
+└── types.ts            # TypeScript interfaces
 ```
 
 ## Made by
