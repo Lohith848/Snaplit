@@ -23,6 +23,22 @@ export default function App() {
   const [username, setUsername] = useState('');
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameError, setUsernameError] = useState('');
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Safety timeout - if loading takes too long, show UI anyway
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimeout(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      console.warn('Loading took too long, forcing UI display');
+      setLoadingTimeout(true);
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [loading]);
 
   const handleLogin = async () => {
     try {
@@ -113,10 +129,12 @@ export default function App() {
     }} />;
   }
 
-  if (loading) {
+  // Show loading only if actually loading and timeout hasn't occurred
+  if (loading && !loadingTimeout) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex flex-col items-center justify-center h-screen bg-black">
+        <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-gray-400 text-sm">Loading...</p>
       </div>
     );
   }

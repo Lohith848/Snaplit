@@ -5,12 +5,18 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
   try {
     console.log('Fetching profile for user:', uid);
     
-    // No timeout - let query complete naturally
-    const { data, error } = await supabase
+    // Add 6 second timeout to prevent infinite hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Profile fetch timeout')), 6000)
+    );
+    
+    const fetchPromise = supabase
       .from('users')
       .select('*')
       .eq('id', uid)
       .single();
+
+    const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
     if (error) {
       // PGRST116 = no rows found (expected for new users)
