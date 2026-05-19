@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, Info, ArrowRight, Check, Share2, MessageSquare, MessageCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 interface Contact {
   name: string;
@@ -12,23 +11,15 @@ export default function ContactSync({ onComplete }: { onComplete: () => void }) 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id || null);
-    });
-  }, []);
-
-  const inviteLink = userId ? `https://snaplit-live.vercel.app/join/${userId}` : 'https://snaplit-live.vercel.app';
+  const inviteLink = 'https://snaplit-live.vercel.app';
 
   const shareViaSms = () => {
-    const text = encodeURIComponent(`Add me on Snaplit! I want to see your live photos on my home screen: ${inviteLink}`);
+    const text = encodeURIComponent(inviteLink);
     window.open(`sms:?&body=${text}`, '_blank');
   };
 
   const shareViaWhatsapp = () => {
-    const text = encodeURIComponent(`Add me on Snaplit! I want to see your live photos on my home screen: ${inviteLink}`);
+    const text = encodeURIComponent(inviteLink);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
@@ -36,8 +27,6 @@ export default function ContactSync({ onComplete }: { onComplete: () => void }) 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Snaplit Invite',
-          text: 'Add me on Snaplit! I want to see your live photos on my home screen.',
           url: inviteLink,
         });
       } catch (err) {
