@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, Send, Check, Plus, Smartphone, AlertCircle } from 'lucide-react';
+import { Camera, Send, Check, Plus, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { sendPhoto, subscribeToFeed, getFriends } from '../services/photoService';
 import { UserProfile, Photo } from '../types';
@@ -18,7 +18,8 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
-  const [askingWidgetPermission, setAskingWidgetPermission] = useState(false);
+  const [sentMessage, setSentMessage] = useState('Sent!');
+  const [hasFriends, setHasFriends] = useState<boolean | null>(null);
   const [latestPhotos, setLatestPhotos] = useState<Photo[]>([]);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -35,7 +36,19 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
       setLatestPhotos(photos);
     });
 
+    // Load friend state for button label
+    let isActive = true;
+    getFriends(profile.uid)
+      .then((friends) => {
+        if (isActive) setHasFriends(friends.length > 0);
+      })
+      .catch((error) => {
+        console.error('Error loading friends:', error);
+        if (isActive) setHasFriends(null);
+      });
+
     return () => {
+      isActive = false;
       clearTimeout(timer);
       stopCamera();
       unsubscribe();
@@ -169,7 +182,6 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
     
     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
     setCapturedImage(dataUrl);
-    setAskingWidgetPermission(true);
     onTakePhoto?.();
   };
 
@@ -183,28 +195,25 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
       const friends = await getFriends(profile.uid);
       const friendIds = friends.map(f => f.uid);
       
-      if (friendIds.length === 0) {
-        setSendError('You have no friends yet. Add friends to share photos!');
-        setSending(false);
-        return;
-      }
-      
+      const recipientIds = friendIds.length > 0 ? friendIds : [profile.uid];
+      setHasFriends(friendIds.length > 0);
+      setSentMessage(friendIds.length > 0 ? 'Sent!' : 'Saved!');
+
       await sendPhoto(
         profile.uid,
         profile.displayName,
         profile.photoURL,
         capturedImage,
-        friendIds
+        recipientIds
       );
       
-      console.log("Photo sent successfully!");
+      console.log(friendIds.length > 0 ? "Photo sent successfully!" : "Photo saved to history!");
       
       setSent(true);
       setTimeout(() => {
         setCapturedImage(null);
         setSent(false);
         setSending(false);
-        setAskingWidgetPermission(false);
       }, 1500);
     } catch (error: any) {
       console.error("Send failed:", error);
@@ -272,42 +281,6 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
            <canvas ref={canvasRef} className="hidden" />
 
            <AnimatePresence>
-             {askingWidgetPermission && (
-               <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-8 text-center"
-               >
-                 <div className="w-16 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
-                   <Smartphone size={32} className="text-black" />
-                 </div>
-                 <h3 className="text-xl font-display font-bold mb-2">Sync with Widget?</h3>
-                 <p className="text-gray-300 text-sm mb-8">
-                   Allow Snaplit to update your friends' home screen widgets with this photo. Available on iOS and Android.
-                 </p>
-                 <div className="w-full flex flex-col gap-3">
-                   <button 
-                     onClick={() => setAskingWidgetPermission(false)}
-                     className="w-full bg-yellow-500 text-black py-4 rounded-2xl font-bold"
-                   >
-                     Allow & Continue
-                   </button>
-                   <button 
-                     onClick={() => {
-                       setAskingWidgetPermission(false);
-                       setCapturedImage(null);
-                     }}
-                     className="w-full text-gray-400 py-2 text-sm font-medium"
-                   >
-                     Cancel
-                   </button>
-                 </div>
-               </motion.div>
-             )}
-           </AnimatePresence>
-
-           <AnimatePresence>
              {sendError && (
                <motion.div 
                 initial={{ opacity: 0, y: 20 }}
@@ -359,11 +332,11 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
                    ) : (
                      <>
                        <Send size={20} />
-                       Send to Friends
-                     </>
-                   )}
-                 </button>
-               </motion.div>
+                        {hasFriends === false ? 'Save to History' : 'Send to Friends'}
+                      </>
+                    )}
+                  </button>
+                </motion.div>
              )}
            </AnimatePresence>
 
@@ -382,10 +355,10 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
                  >
                    <Check size={48} className="text-yellow-500" strokeWidth={4} />
                  </motion.div>
-                 <h3 className="text-black text-2xl font-display font-bold">Sent!</h3>
-               </motion.div>
-             )}
-           </AnimatePresence>
+                  <h3 className="text-black text-2xl font-display font-bold">{sentMessage}</h3>
+                </motion.div>
+              )}
+            </AnimatePresence>
         </div>
       </div>
     </div>
