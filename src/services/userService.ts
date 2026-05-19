@@ -2,19 +2,19 @@ import { supabase } from '../lib/supabase';
 import { UserProfile } from '../types';
 
 export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   try {
     console.log('Fetching profile for user:', uid);
-    
-    // Add 6 second timeout to prevent infinite hanging
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Profile fetch timeout')), 6000)
-    );
-    
+
     const fetchPromise = supabase
       .from('users')
       .select('*')
       .eq('id', uid)
       .single();
+
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error('Profile fetch timeout')), 15000);
+    });
 
     const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
@@ -40,9 +40,15 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
       hasSyncedContacts: data.has_synced_contacts,
       hasSetupWidget: data.has_setup_widget,
     };
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.message === 'Profile fetch timeout') {
+      console.warn('Profile fetch timed out. Check your connection and retry.');
+      return null;
+    }
     console.error('Error fetching user profile:', error);
     return null;
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 };
 
