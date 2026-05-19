@@ -228,42 +228,46 @@ export default function CameraView({ profile, takePhotoTrigger = 0, onTakePhoto 
 
       <div className="flex-1 flex flex-col items-center justify-center py-8">
         <div className="relative w-full aspect-square max-w-sm rounded-[3rem] overflow-hidden bg-zinc-900 shadow-2xl border-2 border-zinc-800">
-           {cameraLoading ? (
-             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black">
-               <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-               <p className="text-gray-400">Requesting camera access...</p>
-             </div>
-           ) : cameraError ? (
-             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black overflow-y-auto">
-               <Camera size={48} className="text-red-500 mb-4 flex-shrink-0" />
-               <p className="text-red-500 font-semibold mb-4">{cameraError}</p>
-               <button
-                 onClick={() => {
-                   setCameraError(null);
-                   startCamera();
-                 }}
-                 className="bg-yellow-500 text-black font-bold px-6 py-2 rounded-xl text-sm"
-               >
-                 Try Again
-               </button>
-             </div>
-           ) : capturedImage ? (
-             <motion.img 
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            playsInline 
+            muted
+            className={`w-full h-full object-cover scale-x-[-1] ${capturedImage ? 'opacity-0' : 'opacity-100'}`} 
+          />
+
+          {cameraLoading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black">
+              <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-400">Requesting camera access...</p>
+            </div>
+          )}
+
+          {cameraError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black overflow-y-auto">
+              <Camera size={48} className="text-red-500 mb-4 flex-shrink-0" />
+              <p className="text-red-500 font-semibold mb-4">{cameraError}</p>
+              <button
+                onClick={() => {
+                  setCameraError(null);
+                  startCamera();
+                }}
+                className="bg-yellow-500 text-black font-bold px-6 py-2 rounded-xl text-sm"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {capturedImage && (
+            <motion.img 
               initial={{ scale: 1.1 }}
               animate={{ scale: 1 }}
               src={capturedImage} 
-              className="w-full h-full object-cover" 
+              className="absolute inset-0 w-full h-full object-cover" 
               alt="Captured" 
-             />
-           ) : (
-             <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              muted
-              className="w-full h-full object-cover scale-x-[-1]" 
-             />
-           )}
+            />
+          )}
            
            <canvas ref={canvasRef} className="hidden" />
 
