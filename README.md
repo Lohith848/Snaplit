@@ -168,6 +168,6 @@ src/
 └── types.ts            # TypeScript interfaces
 ```
 
-## Made by
+## Author
 
 LOHITH G 🌻
