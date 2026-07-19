@@ -2,7 +2,7 @@
 
 # Snaplit
 
-**Live photos from your best friends, right on your Home Screen.**
+**Live photos from your best friends, right on your Home Screen **
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://snaplit-sage.vercel.app)
 [![Built with Supabase](https://img.shields.io/badge/Built%20with-Supabase-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
